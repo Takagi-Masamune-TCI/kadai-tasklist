@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\TaskController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -13,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// トップページはタスクリストの「一覧」と同じページにルーティングする設定を入れる
+Route::get('/', [TaskController::class, 'index']);
+
+// タスクを管理するRouterには Route::resource を利用する
+Route::resource('tasks', TaskController::class);

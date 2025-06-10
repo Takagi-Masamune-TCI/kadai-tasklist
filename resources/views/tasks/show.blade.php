@@ -16,6 +16,11 @@
             <th>内容</th>
             <td>{{ $task->content }}</td>
         </tr>
+
+        <tr>
+            <th>状態</th>
+            <td>{{ $task->status }}</td>
+        </tr>
     </table>
 
     {{-- タスク編集ページへのリンク --}}

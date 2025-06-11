@@ -13,13 +13,19 @@ class TaskController extends Controller
      */
     public function index()
     {
-        // タスク覧を取得
-        $tasks = Task::all();         // 追加
-
+        $data = [];
+        if (\Auth::check()) {
+            // タスク覧を取得
+            $user = \Auth::user();
+            $tasks = Task::where('user_id', $user->id)->get();
+            $data = [
+                'user' => $user,
+                'tasks' => $tasks,   
+            ];
+        }
+        
         // タスク覧ビューでそれを表示（第２引数は渡すデータ。Viewでは $tasks で呼び出せる。）
-        return view('tasks.index', [     // 追加
-            'tasks' => $tasks,        // 追加
-        ]);
+        return view('tasks.index', $data);
     }
 
     /**
@@ -52,6 +58,7 @@ class TaskController extends Controller
         $task = new Task;
         $task->content = $request->content;
         $task->status = $request->status;
+        $task->user_id = \Auth::user()->id;
         $task->save();
 
         // トップページへリダイレクトさせる
@@ -66,6 +73,11 @@ class TaskController extends Controller
     {
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
+
+        if (\Auth::id() !== $task->user_id) {
+            return back()
+                ->with('Auth Fail', 'ログインしているユーザーが異なります');
+        }
 
         // タスク詳細ビューでそれを表示
         return view('tasks.show', [
@@ -82,6 +94,11 @@ class TaskController extends Controller
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
 
+        if (\Auth::id() !== $task->user_id) {
+            return back()
+                ->with('Auth Fail', 'ログインしているユーザーが異なります');
+        }
+
         // タスク編集ビューでそれを表示
         return view('tasks.edit', [
             'task' => $task,
@@ -94,14 +111,20 @@ class TaskController extends Controller
     // PUT or PATCH /tasks/{id}
     public function update(Request $request, string $id)
     {
+        // idの値でタスクを検索して取得
+        $task = Task::findOrFail($id);
+
+        if (\Auth::id() !== $task->user_id) {
+            return back()
+                ->with('Auth Fail', 'ログインしているユーザーが異なります');
+        }
+
         // バリデーション
         $request->validate([
             'content' => 'required|max:255',
             'status' => 'required|max:10',
         ]);
 
-        // idの値でタスクを検索して取得
-        $task = Task::findOrFail($id);
         // タスクを更新
         $task->content = $request->content;
         $task->status = $request->status;
@@ -119,6 +142,12 @@ class TaskController extends Controller
     {
         // idの値でタスクを検索して取得
         $task = Task::findOrFail($id);
+
+        if (\Auth::id() !== $task->user_id) {
+            return back()
+                ->with('Auth Fail', 'ログインしているユーザーが異なります');
+        }
+
         // タスクを削除
         $task->delete();
 
